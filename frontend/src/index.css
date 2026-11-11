@@ -1,0 +1,219 @@
+@import url('https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap');
+
+body {
+  margin: 0;
+  font-family: 'Source Sans 3', sans-serif;
+  ;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f2f2f2;
+  color: #333333;
+  overflow-x: hidden;
+  letter-spacing: 0.01em;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'Lora', serif;
+  font-weight: 700;
+  color: #174D38;
+  letter-spacing: -0.01em;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+.custom-signup-btn {
+  background-color: #174D38;
+  color: #f2f2f2; /* Sets text to white so it's readable */
+   border: 1px solid #174D38;
+  transition: background-color 0.2s ease-in-out; /* Smooth transition */
+}
+
+.custom-signup-btn:hover {
+  background-color: #E5EAE7;
+  color: #174D38; /* Changes text color on hover so it remains readable */
+  border-color: #174D38;
+}
+
+.custom-outline-btn {
+  background-color: #FFFFFF;
+  color: #174D38;
+  border: 1px solid #CBCBCB;
+  transition: all 0.2s ease-in-out;
+}
+
+.custom-outline-btn:hover {
+  background-color: #E5EAE7;
+  color: #174D38;
+  border-color: #174D38;
+}
+
+/* Input fields */
+.form-control {
+  background-color: #FFFFFF;
+  border: 1px solid #CBCBCB;
+  color: #174D38;
+}
+
+.form-control:focus {
+  background-color: #FFFFFF;
+  border-color: #174D38;
+  box-shadow: 0 0 0 0.2rem rgba(23, 77, 56, 0.15);
+}
+
+.form-control::placeholder {
+  color: #888888;
+}
+
+.footer-link a {
+  color: #174D38;
+  text-decoration: none;
+}
+
+.text-muted a {
+  text-decoration: none;
+
+}
+
+
+.prod-universe img {
+  height: 50px;
+  width: 200px;
+}
+
+#supportHero {
+  background-color: #ffffff;
+  color: #1D1D1F;
+}
+
+#supportHero a {
+  color: #0066CC;
+}
+
+#supportWrapper {
+  display: flex;
+  justify-content: space-between;
+  margin: 0 150px;
+}
+
+#supportHero input {
+  padding: 20px 100px;
+  width: 100%;
+  font-size: 20px;
+  border-radius: 5px;
+  border: 1px solid #D2D2D7;
+  box-sizing: border-box;
+}
+
+/* html, body, #root {
+  height: 100%;
+} */
+
+/* Navbar */
+.navbar-container {
+  padding: 10px 16px;
+}
+
+.vestora-logo {
+  width: 110px;
+  height: auto;
+  display: block;
+}
+
+.nav-link {
+  margin-left: 32px;
+  padding: 8px 0 !important;
+  font-size: 16px;
+  letter-spacing: 0.2px;
+  transition: color 0.2s ease;
+}
+
+.nav-link:hover {
+  color: #E5EAE7 !important;
+}
+
+@media (max-width: 991px) {
+  .navbar-container {
+    padding: 10px 20px;
+  }
+
+  .vestora-logo {
+    width: 105px;
+  }
+
+  .navbar-nav {
+    margin-top: 12px;
+    padding-bottom: 8px;
+  }
+
+  .nav-link {
+    margin-left: 0;
+    padding: 10px 4px !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .navbar-container {
+    padding: 8px 14px;
+  }
+
+  .vestora-logo {
+    width: 95px;
+  }
+
+  .navbar-toggler {
+    padding: 5px 8px;
+    border: 1px solid #CBCBCB;
+    border-radius: 8px;
+  }
+
+  .navbar-nav {
+    margin-top: 10px;
+    padding: 4px 0 8px;
+  }
+
+  .nav-link {
+    font-size: 15px;
+    margin-left: 0;
+    padding: 9px 2px !important;
+  }
+}
+
+/* Footer */
+
+.footer-main { padding: 55px 5% 10px; color: #F2F2F2; }
+
+.footer-brand { padding: 0 20px; }
+
+.footer-logo { width: 130px; height: auto; display: block; margin-bottom: 18px; }
+
+.footer-brand p { font-size: 14px; line-height: 1.7; margin: 0; }
+
+.footer-link { padding: 0 20px; margin-bottom: 30px; }
+
+.footer-link p { color: #F2F2F2; font-size: 16px; font-weight: 600; margin-bottom: 18px; }
+
+.footer-link a { display: block; color: #F2F2F2; text-decoration: none; font-size: 14px;  line-height: 1; transition: color 0.2s ease; }
+
+.footer-link a:hover { color: #e5eae7ac; }
+
+.footer-legal { margin-top: 25px; padding: 0 20px; color: #F2F2F2; font-size: 11px; line-height: 1.65; }
+
+.footer-legal p { margin-bottom: 16px; }
+
+.footer-bottom-links { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 10px 24px; padding: 20px 20px 10px; text-align: center; }
+
+.footer-bottom-links a { color: #F2F2F2; text-decoration: none; font-size: 14px; transition: color 0.2s ease; } 
+
+.footer-bottom-links a:hover { color: #e5eae7ac; }
+
+@media (max-width: 991px) { .footer-main { padding: 45px 4% 20px; } .footer-brand { margin-bottom: 35px; } .footer-link { padding: 0 15px; } .footer-legal { padding: 0 15px; margin-top: 10px; } }
+
+@media (max-width: 576px) { .footer-main { padding: 40px 20px 15px; } .footer-brand { padding: 0; margin-bottom: 35px; } .footer-logo { width: 110px; margin-bottom: 15px; } .footer-brand p { font-size: 13px; } .footer-link { padding: 0; margin-bottom: 28px; } .footer-link p { font-size: 15px; margin-bottom: 14px; } .footer-link a { font-size: 13px; margin-bottom: 8px; } .footer-legal { padding: 0; margin-top: 10px; font-size: 10px; line-height: 1.65; } .footer-legal p { margin-bottom: 14px; } .footer-bottom-links { padding: 15px 0 5px; gap: 8px 18px; } .footer-bottom-links a { font-size: 12px; } }
