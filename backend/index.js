@@ -29,7 +29,9 @@ const watchlistRoutes = require("./routes/watchlistRoutes");
 const journalRoutes = require("./routes/journalRoutes");
 const quizRoutes = require("./routes/quizRoutes");
 const { getQuote, getQuotes } = require("./services/marketData");
+const mlRoutes = require("./routes/ml");
 
+app.use("/api/ml", mlRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/stocks", stockRoutes);
 app.use("/api/watchlist", watchlistRoutes);

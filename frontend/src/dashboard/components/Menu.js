@@ -133,6 +133,13 @@ const Menu = () => {
             </Link>
           </li>
           <li>
+            <Link to="/dashboard/insights" onClick={() => handleMenuClick(9)}>
+              <p className={selectedMenu === 9 ? activeMenuClass : menuClass}>
+                Insights
+              </p>
+            </Link>
+          </li>
+          <li>
             <Link to="/dashboard/apps" onClick={() => handleMenuClick(5)}>
               <p className={selectedMenu === 5 ? activeMenuClass : menuClass}>
                 Apps
