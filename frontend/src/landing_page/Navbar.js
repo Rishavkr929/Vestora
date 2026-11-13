@@ -53,6 +53,10 @@ function Navbar() {
           <NavLink to="/support" style={navStyle}>
             <span className="fs-5">Support</span>
           </NavLink>
+
+          <NavLink to="/glossary" style={navStyle}>
+            <span className="fs-5">Glossary</span>
+          </NavLink>
         </div>
 
         {/* Desktop Signup */}

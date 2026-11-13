@@ -142,6 +142,10 @@ function Footer() {
                 Sign up
               </a>
 
+              <a href="/glossary" className="text-decoration-none text-light fs-5">
+                Glossary
+              </a>
+
             </div>
           </div>
 

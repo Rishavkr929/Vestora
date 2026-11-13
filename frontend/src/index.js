@@ -14,6 +14,7 @@ import AboutPage from "./landing_page/about/AboutPage";
 import ProductPage from "./landing_page/products/ProductPage";
 import PricingPage from "./landing_page/pricing/PricingPage";
 import SupportPage from "./landing_page/support/SupportPage";
+import Glossary from "./landing_page/glossary/Glossary"
 
 // Dashboard
 import DashboardHome from "./dashboard/components/Home";
@@ -102,6 +103,17 @@ root.render(
             <SupportPage />
           </LandingLayout>
         }
+
+      />
+
+      <Route
+        path="/glossary"
+        element={
+          <LandingLayout>
+            <Glossary />
+          </LandingLayout>
+        }
+
       />
 
       {/* ⭐ Dashboard (NO Landing Layout) */}

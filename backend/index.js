@@ -38,6 +38,22 @@ app.use("/api/watchlist", watchlistRoutes);
 app.use("/api/journal", journalRoutes);
 app.use("/api/quiz", quizRoutes);
 
+mongoose.connection.on("connected", () => {
+  console.log("✅ MongoDB connected");
+});
+
+mongoose.connection.on("disconnected", () => {
+  console.error("⚠️ MongoDB disconnected");
+});
+
+mongoose.connection.on("reconnected", () => {
+  console.log("✅ MongoDB reconnected");
+});
+
+mongoose.connection.on("error", (err) => {
+  console.error("❌ MongoDB connection error:", err.message);
+});
+
 // app.get("/addHoldings", async (req, res) => {
 //   let tempHoldings = [
 //     {
@@ -454,6 +470,7 @@ async function checkStopLossPositions() {
       }
     }
   }
+  
 
   for (const position of activePositions) {
     const holding = await HoldingsModel.findOne({
@@ -493,8 +510,63 @@ async function checkStopLossPositions() {
   }
 }
 
+
+let isCheckingStopLoss = false;
+
+async function runStopLossCheck() {
+  if (isCheckingStopLoss) return;
+
+  if (mongoose.connection.readyState !== 1) {
+    console.log("⚠️ MongoDB unavailable. Skipping stop-loss check.");
+    return;
+  }
+
+  isCheckingStopLoss = true;
+
+  try {
+    await checkStopLossPositions();
+  } catch (error) {
+    console.error("❌ Stop-loss check failed:", error);
+  } finally {
+    isCheckingStopLoss = false;
+  }
+}
+
+function startStopLossScheduler() {
+  async function scheduleNextCheck() {
+    await runStopLossCheck();
+    setTimeout(scheduleNextCheck, 10000);
+  }
+
+  scheduleNextCheck();
+}
+
+
+// mongoose
+//   .connect(MONGO_URL)
+//   .then(() => {
+//     console.log("DB Connected");
+
+//     app.listen(PORT, () => {
+//       console.log("Server running on " + PORT);
+//     });
+
+//     setInterval(() => {
+//       checkStopLossPositions().catch((err) =>
+//         console.error("Stop-loss check failed:", err),
+//       );
+//     }, 5000);
+//   })
+//   .catch((err) => {
+//     console.error("MongoDB connection failed ❌");
+//     console.error(err.message);
+//   });
+
 mongoose
-  .connect(MONGO_URL)
+  .connect(MONGO_URL, {
+    serverSelectionTimeoutMS: 10000,
+    maxPoolSize: 10,
+  })
   .then(() => {
     console.log("DB Connected");
 
@@ -502,13 +574,8 @@ mongoose
       console.log("Server running on " + PORT);
     });
 
-    setInterval(() => {
-      checkStopLossPositions().catch((err) =>
-        console.error("Stop-loss check failed:", err),
-      );
-    }, 5000);
+    startStopLossScheduler();
   })
   .catch((err) => {
-    console.error("MongoDB connection failed ❌");
-    console.error(err.message);
+    console.error("MongoDB connection failed:", err);
   });
