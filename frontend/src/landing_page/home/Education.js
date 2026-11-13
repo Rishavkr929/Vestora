@@ -39,7 +39,6 @@
 
 // export default Education;
 
-
 import React from "react";
 
 function Education() {
@@ -50,7 +49,7 @@ function Education() {
         backgroundColor: "#174D38",
         paddingTop: "100px",
         paddingBottom: "100px",
-        color: "#f5f2ef"
+        color: "#f5f2ef",
       }}
     >
       <div
@@ -59,14 +58,12 @@ function Education() {
           maxWidth: "1650px",
           paddingLeft: "clamp(20px, 6vw, 80px)",
           paddingRight: "clamp(20px, 6vw, 80px)",
-          margin: "auto"
+          margin: "auto",
         }}
       >
         <div className="row align-items-center">
-
           {/* Left Heading */}
           <div className="col-12 col-md-6 mb-4 mb-md-0 pe-md-4">
-
             <h1
               className="mb-0"
               style={{
@@ -75,34 +72,30 @@ function Education() {
                 fontWeight: "400",
                 lineHeight: "1.2",
                 letterSpacing: "-1.5px",
-                color: "#f5f2ef"
+                color: "#f5f2ef",
               }}
             >
-              We do not predict prices.
-              Nobody can, reliably.
+              A forecast is a guess with error bars. We show it that way.
             </h1>
-
           </div>
 
           {/* Right Description */}
           <div className="col-12 col-md-6 ps-md-4">
-
             <p
               className="mb-0"
               style={{
                 fontSize: "clamp(16px, 1.4vw, 23px)",
                 fontWeight: "400",
                 lineHeight: "1.7",
-                color: "#c9d2cd"
+                color: "#c9d2cd",
               }}
             >
-              Vestora shows what a stock did, and leaves the
-              decision to you. It is a practice tool built by
-              students at GTBIT, not a broker and not advice.
+              Vestora fits an ARIMA model to two years of prices and shows a
+              range, never a promise. Markets are hard to predict, so treat it
+              as a learning aid and make the decision yourself. It is a practice
+              tool built by students at GTBIT, not a broker and not advice.
             </p>
-
           </div>
-
         </div>
       </div>
     </section>
@@ -110,4 +103,3 @@ function Education() {
 }
 
 export default Education;
-

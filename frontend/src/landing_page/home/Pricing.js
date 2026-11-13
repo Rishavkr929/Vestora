@@ -51,6 +51,7 @@
 
 
 
+
 import React from "react";
 
 function Pricing() {
@@ -59,62 +60,53 @@ function Pricing() {
       title: "Stop-loss Positions",
       description:
         "Choose a price. If a stock falls to it, Vestora sells for you.",
-      style: "light"
+      style: "light",
     },
     {
       title: "Trade journal",
       description:
         "Say why you bought: trending, a tip, research or just trying. See which reason earns or loses.",
-      style: "light"
+      style: "light",
     },
     {
       title: "Watchlist of 50",
       description:
         "Star your favourites from the full stock list and open a chart in one click.",
-      style: "light"
+      style: "light",
     },
     {
-      title: "Trend view, not predictions",
+      title: "Trend view",
       description:
         "Moving averages and past changes, clearly labelled as history.",
-      style: "light"
+      style: "light",
     },
     {
       title: "Glossary",
       description:
         "Plain-language meanings for stock-market terms, without leaving the app.",
-      style: "green"
-    }
+      style: "light",
+    },
   ];
 
-  return (
-    <section
-      className="container-fluid py-5"
-      style={{
-        // backgroundColor: "#000000",
-        color: "#174D38", 
-        paddingLeft: "100px",
-    paddingRight: "100px",
-      }}
-    >
-      <div
-        className="container-fluid"
-        style={{
-          width: "92%",
-          maxWidth: "1650px",
-          margin: "auto"
-        }}
-      >
+  const cardStyle = {
+    borderRadius: "26px",
+    minHeight: "215px",
+  };
 
+  return (
+    <section className="container-fluid py-5 px-3 px-md-4 px-lg-5">
+      <div
+        className="container-fluid px-5"
+        style={{ maxWidth: "1600px", margin: "auto" }}
+      >
         {/* Section Heading */}
         <div className="mb-5">
-
           <p
             className="fw-bold mb-3"
             style={{
-              color: "#6b2828",
-              fontSize: "16px",
-              letterSpacing: "1px"
+              color: "#4d1717",
+              fontSize: "15px",
+              letterSpacing: "1px",
             }}
           >
             FEATURES
@@ -125,37 +117,35 @@ function Pricing() {
             style={{
               fontFamily: "'Bodoni Moda', Georgia, serif",
               fontSize: "clamp(40px, 4vw, 60px)",
-              fontWeight: "400",
-              lineHeight: "1.2",
-              letterSpacing: "-2px",
-              color: "#174D38"
+              fontWeight: 400,
+              lineHeight: 1.2,
+              letterSpacing: "-1.5px",
+              color: "#174d38",
             }}
           >
             Built to teach, not to hurry you.
           </h1>
-
         </div>
 
-        {/* Feature Cards */}
-        <div className="row g-4">
+        {/* First Row */}
+        <div className="row g-3 g-lg-4 mb-3 mb-lg-4">
 
-          {/* Highlighted Mistake Detector */}
+          {/* Mistake Detector */}
           <div className="col-12 col-lg-8">
             <div
               className="h-100 p-4 p-md-5"
               style={{
-                backgroundColor: "#501a18",
-                borderRadius: "28px",
-                minHeight: "280px",
-                color: "#f5f5f5"
+                ...cardStyle,
+                backgroundColor: "#4d1717",
+                color: "#f2f2f2",
               }}
             >
               <p
                 className="fw-bold mb-3"
                 style={{
-                  color: "#d8c5c5",
+                  color: "#cbcbcb",
                   fontSize: "15px",
-                  letterSpacing: "1px"
+                  letterSpacing: "1px",
                 }}
               >
                 MISTAKE DETECTOR
@@ -166,8 +156,8 @@ function Pricing() {
                 style={{
                   fontFamily: "'Bodoni Moda', Georgia, serif",
                   fontSize: "clamp(25px, 2.5vw, 40px)",
-                  fontWeight: "400",
-                  lineHeight: "1.3"
+                  fontWeight: 400,
+                  lineHeight: 1.3,
                 }}
               >
                 It tells you what you did wrong, kindly.
@@ -177,61 +167,213 @@ function Pricing() {
                 className="mb-0"
                 style={{
                   color: "#d8d0ce",
-                  fontSize: "19px",
-                  lineHeight: "1.6"
+                  fontSize: "18px",
+                  lineHeight: 1.6,
+                  maxWidth: "700px",
                 }}
               >
-                Three common errors are flagged automatically:
-                too much in one stock, holdings with no stop-loss,
-                and panic-selling a few days after buying at a loss.
+                Three common errors are flagged automatically: too much in
+                one stock, holdings with no stop-loss, and panic-selling
+                a few days after buying at a loss.
               </p>
             </div>
           </div>
 
-          {/* Remaining Feature Cards */}
-          {features.map((feature) => (
+          {/* Stop-loss */}
+          <div className="col-12 col-lg-4">
             <div
-              className="col-12 col-md-6 col-lg-4"
-              key={feature.title}
+              className="h-100 p-4 p-md-5"
+              style={{
+                ...cardStyle,
+                backgroundColor: "#cbcbcb",
+                color: "#174d38",
+              }}
             >
+              <h3 className="fw-semibold fs-4 mb-3">
+                {features[0].title}
+              </h3>
+
+              <p className="mb-0 fs-5" style={{ lineHeight: 1.6 }}>
+                {features[0].description}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Second Row */}
+        <div className="row g-3 g-lg-4 mb-3 mb-lg-4">
+
+          {/* Price Forecast */}
+          <div className="col-12 col-lg-8">
+            <div
+              className="h-100 p-4 p-md-5"
+              style={{
+                ...cardStyle,
+                backgroundColor: "#174d38",
+                color: "#f2f2f2",
+              }}
+            >
+              <div className="row align-items-center g-4 h-100">
+
+                {/* Forecast Description */}
+                <div className="col-12 col-md-6">
+                  <p
+                    className="fw-bold mb-3"
+                    style={{
+                      color: "#cbcbcb",
+                      fontSize: "15px",
+                      letterSpacing: "1px",
+                    }}
+                  >
+                    PRICE FORECAST
+                  </p>
+
+                  <h2
+                    className="mb-3"
+                    style={{
+                      fontFamily: "'Bodoni Moda', Georgia, serif",
+                      fontSize: "clamp(27px, 2.5vw, 40px)",
+                      fontWeight: 400,
+                      lineHeight: 1.3,
+                    }}
+                  >
+                    See a range, not a promise.
+                  </h2>
+
+                  <p
+                    className="mb-0"
+                    style={{
+                      color: "#cbcbcb",
+                      fontSize: "18px",
+                      lineHeight: 1.6,
+                    }}
+                  >
+                    An ARIMA model learns from two years of daily prices
+                    and draws the next few weeks with a shaded range of
+                    uncertainty. It can be wrong, and it says so.
+                  </p>
+                </div>
+
+                {/* Forecast Chart */}
+                <div className="col-12 col-md-6">
+                  <div
+                    className="p-3 p-md-3"
+                    style={{
+                      backgroundColor: "#f2f2f2",
+                      color: "#174d38",
+                      borderRadius: "20px",
+                    }}
+                  >
+                    <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                      <span className="fw-bold small">
+                        SAMPLE FORECAST
+                      </span>
+                      <span className="fw-semibold small">
+                        ARIMA · 2 years of data
+                      </span>
+                    </div>
+
+                    <svg
+                      viewBox="0 0 340 125"
+                      width="100%"
+                      role="img"
+                      aria-label="Illustrative stock history and forecast chart"
+                    >
+                      <polygon
+                        points="205,65 330,20 330,90"
+                        fill="#cbcbcb"
+                        opacity="0.8"
+                      />
+
+                      <polyline
+                        points="0,105 28,95 55,100 82,80 110,87 138,69 165,76 192,60 220,65"
+                        fill="none"
+                        stroke="#174d38"
+                        strokeWidth="2.8"
+                      />
+
+                      <line
+                        x1="220"
+                        y1="65"
+                        x2="330"
+                        y2="55"
+                        stroke="#4d1717"
+                        strokeWidth="2.8"
+                        strokeDasharray="6 5"
+                      />
+
+                      <line
+                        x1="220"
+                        y1="15"
+                        x2="220"
+                        y2="108"
+                        stroke="#cbcbcb"
+                        strokeDasharray="3 4"
+                      />
+
+                      <line
+                        x1="0"
+                        y1="108"
+                        x2="330"
+                        y2="108"
+                        stroke="#cbcbcb"
+                        strokeWidth="1"
+                      />
+                    </svg>
+
+                    <p
+                      className="small mb-0 mt-2"
+                      style={{ lineHeight: 1.4 }}
+                    >
+                      Solid line: history. Dashed line: forecast.
+                      Shaded: range.
+                    </p>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          {/* Trade Journal */}
+          <div className="col-12 col-lg-4">
+            <div
+              className="h-100 p-4 p-md-5"
+              style={{
+                ...cardStyle,
+                backgroundColor: "#cbcbcb",
+                color: "#174d38",
+              }}
+            >
+              <h3 className="fw-semibold fs-4 mb-3">
+                {features[1].title}
+              </h3>
+
+              <p className="mb-0 fs-5" style={{ lineHeight: 1.6 }}>
+                {features[1].description}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Third Row */}
+        <div className="row g-3 g-lg-4">
+
+          {features.slice(2).map((feature) => (
+            <div className="col-12 col-md-6 col-lg-4" key={feature.title}>
               <div
-                className="h-100 p-4 p-md-5"
+                className="h-100 p-4 p-md-4"
                 style={{
-                  backgroundColor:
-                    feature.style === "green"
-                      ? "#174D38"
-                      : "#cccccc",
-
-                  color:
-                    feature.style === "green"
-                      ? "#f5f5f5"
-                      : "#174D38",
-
-                  borderRadius: "28px",
-                  minHeight: "215px"
+                  ...cardStyle,
+                  backgroundColor: "#cbcbcb",
+                  color: "#174d38",
                 }}
               >
-                <h3
-                  className="fw-semibold mb-3"
-                  style={{
-                    fontSize: "25px",
-                    lineHeight: "1.3"
-                  }}
-                >
+                <h3 className="fw-semibold fs-4 mb-3">
                   {feature.title}
                 </h3>
 
-                <p
-                  className="mb-0"
-                  style={{
-                    fontSize: "19px",
-                    lineHeight: "1.6",
-                    color:
-                      feature.style === "green"
-                        ? "#c9d2cd"
-                        : "#174D38"
-                  }}
-                >
+                <p className="mb-0 fs-5" style={{ lineHeight: 1.6 }}>
                   {feature.description}
                 </p>
               </div>
@@ -239,10 +381,10 @@ function Pricing() {
           ))}
 
         </div>
-
       </div>
     </section>
   );
 }
 
 export default Pricing;
+

@@ -81,7 +81,7 @@ function Signup() {
       <div className="container-fluid min-vh-100">
         <div className="row min-vh-100">
           {/* LEFT SIDE */}
-          <div
+          {/* <div
             className="col-12 col-md-7 d-none d-md-flex flex-column justify-content-center align-items-center px-4 px-lg-5 py-5 border-end text-center"
             style={{ background: "#174D38" }}
           >
@@ -120,6 +120,76 @@ function Signup() {
                   No card, no real money — just a market to learn on.
                 </p>
               </div>
+            </div>
+          </div> */}
+
+          {/* LEFT SIDE - VESTORA HERO SECTION */}
+          <div
+            className="col-12 col-md-7 d-none d-md-flex  flex-column align-self-start align-self-md-stretch px-4 px-lg-5 py-4 py-md-5"
+            style={{
+              backgroundColor: "#174D38",
+              color: "#F2F2F2",
+            }}
+          >
+            {/* LOGO */}
+            <div className="mb-4">
+              <img
+                src="media/image/VESTORA2.png"
+                alt="Vestora"
+                style={{
+                  height: "clamp(42px, 5vw, 56px)",
+                  width: "auto",
+                  objectFit: "contain",
+                }}
+              />
+            </div>
+
+            {/* MAIN CONTENT */}
+            <div className="flex-grow-1 d-flex align-items-center py-5 py-md-0">
+              <div className="w-100" style={{ maxWidth: "900px" }}>
+                <h1
+                  className="mb-4"
+                  style={{
+                    fontFamily: "Georgia, 'Times New Roman', serif",
+                    fontSize: "clamp(40px, 4vw, 60px)",
+                    fontWeight: "400",
+                    lineHeight: "1.12",
+                    letterSpacing: "-2px",
+                    color: "#F2F2F2",
+                  }}
+                >
+                  Your first ₹1,00,000 is on us.
+                </h1>
+
+                <p
+                  className="mb-0"
+                  style={{
+                    fontSize: "clamp(16px, 1.4vw, 23px)",
+                    lineHeight: "1.65",
+                    color: "#CBCBCB",
+                    maxWidth: "700px",
+                  }}
+                >
+                  Practice with real NSE prices. Nothing you do here can cost
+                  you real money.
+                </p>
+              </div>
+            </div>
+
+            {/* DISCLAIMER */}
+            <div className="mt-3 mt-md-4">
+              <p
+                className="mb-0"
+                style={{
+                  fontSize: "clamp(0.9rem, 1.5vw, 1.25rem)",
+                  lineHeight: "1.65",
+                  color: "#CBCBCB",
+                  maxWidth: "700px",
+                }}
+              >
+                Vestora is an educational simulator, not a licensed broker, and
+                does not give investment advice.
+              </p>
             </div>
           </div>
 

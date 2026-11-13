@@ -1,62 +1,107 @@
 import React from "react";
 
-function LeftSection({
-  imageURL,
-  visual,
-  prodName,
-  prodDesc,
-  tryDemo,
-  learnMore,
-  googlePlay,
-  appStore,
-}) {
+function LeftSection() {
+  const steps = [
+    {
+      number: "1",
+      title: "Create your account",
+      description:
+        "Sign up with your name, email and a password. Your practice wallet of ₹1,00,000 is added straight away.",
+    },
+    {
+      number: "2",
+      title: "Find stocks and build a watchlist",
+      description:
+        "Browse about fifty NSE stocks, star up to fifty favourites, open a price chart, and read a trend summary that is clearly labelled as history, not a prediction.",
+    },
+    {
+      number: "3",
+      title: "Look at the forecast",
+      description:
+        "Open Forecast on any stock. Vestora downloads two years of daily closing prices, fits an ARIMA model and draws the next few weeks as a dashed line inside a shaded range. It is an estimate that can be wrong, not advice.",
+    },
+    {
+      number: "4",
+      title: "Buy and sell, and say why",
+      description:
+        "Every order is priced by our server from a live quote, so nobody can set their own price. When you buy, you pick a reason: trending, a tip, your own research, or just trying out.",
+    },
+    {
+      number: "5",
+      title: "Protect holdings with a stop-loss",
+      description:
+        "Choose a price for a stock you hold. If it falls to that price, Vestora sells it for you and records it under Positions.",
+    },
+    {
+      number: "6",
+      title: "Learn from your habits",
+      description:
+        "The journal shows profit and loss by reason. The mistake detector warns about too much in one stock, holdings with no stop-loss, and panic-selling. The glossary explains any term you meet.",
+    },
+  ];
+
   return (
-    <div className="container mt-5 px-3 px-md-4">
-      <div className="row align-items-center">
-        <div className="col-12 col-md-6 text-center p-3 p-md-4">
-          {visual ? visual : <img src={imageURL} className="img-fluid" alt="" />}
-        </div>
+    <section
+      className="container-fluid  px-3 px-md-4 px-lg-5"
+      style={{ color: "#174d38" }}
+    >
+      <div className="container-fluid px-5">
 
-        <div className="col-12 col-md-6 p-3 p-md-4 mt-3 mt-md-0">
-          <h1 className="fs-4 mb-3 ">{prodName}</h1>
-
-          <p className="text" style={{ lineHeight: "1.8" }}>
-            {prodDesc}
-          </p>
-
-          <div className="d-flex flex-wrap gap-3 mt-3">
-            {tryDemo && (
-              <a href={tryDemo} className="text-decoration-none">
-                Try it&nbsp;{" "}
-                <i class="fa fa-long-arrow-right" aria-hidden="true"></i>
-              </a>
-            )}
-
-            {learnMore && (
-              <a href={learnMore} className="text-decoration-none">
-                Learn More{" "}
-                <i class="fa fa-long-arrow-right" aria-hidden="true"></i>
-              </a>
-            )}
-          </div>
-
-          {(googlePlay || appStore) && (
-            <div className="d-flex flex-wrap align-items-center gap-3 mt-4">
-              {googlePlay && (
-                <a href={googlePlay}>
-                  <img src="media/image/googlePlayBadge.svg" className="img-fluid" alt="" />
-                </a>
-              )}
-              {appStore && (
-                <a href={appStore} className="mx-4">
-                  <img src="media/image/appstoreBadge.svg" className="img-fluid" alt="" />
-                </a>
-              )}
+        {steps.map((step, index) => (
+          <div
+            className={`row py-4 py-md-5 ${
+              index !== steps.length - 1 ? "border-bottom" : ""
+            }`}
+            key={step.number}
+            style={{
+              borderColor: "#cbcbcb",
+              borderBottomWidth: index !== steps.length - 1 ? "2px" : "0",
+            }}
+          >
+            {/* Step Number */}
+            <div className="col-2 col-md-1 d-flex align-items-start">
+              <span
+                className="fw-normal"
+                style={{
+                  fontFamily: 'Georgia, "Times New Roman", serif',
+                  fontSize: "clamp(42px, 5vw, 76px)",
+                  lineHeight: "1",
+                  color: "#174d38",
+                }}
+              >
+                {step.number}
+              </span>
             </div>
-          )}
-        </div>
+
+            {/* Step Content */}
+            <div className="col-10 col-md-11 ps-3 ps-md-4">
+              <h2
+                className="fw-bold mb-2"
+                style={{
+                  fontSize: "clamp(19px, 2vw, 27px)",
+                  color: "#174d38",
+                }}
+              >
+                {step.title}
+              </h2>
+
+              <p
+                className="mb-0 fw-medium"
+                style={{
+                  fontSize: "clamp(15px, 1.5vw, 20px)",
+                  lineHeight: "1.6",
+                  maxWidth: "700px",
+                  color: "#174d38",
+                }}
+              >
+                {step.description}
+              </p>
+            </div>
+          </div>
+        ))}
+
       </div>
-    </div>
+    </section>
   );
 }
 
