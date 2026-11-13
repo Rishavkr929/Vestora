@@ -9,6 +9,5 @@ yfinance
 pandas
 numpy
 statsmodels
-pmdarima
 scikit-learn
 requests
