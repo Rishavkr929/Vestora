@@ -46,13 +46,22 @@ const RiskPanel = () => {
 
       holdings.forEach((h) => {
         const rawName = h.name || h.symbol || h.stock || "";
-        const name = String(rawName).replace(".NS", "").replace(".BO", "");
+        const name = String(rawName)
+          .trim()
+          .toUpperCase()
+          .replace(".NS", "")
+          .replace(".BO", "");
         const qty = Number(h.qty ?? h.quantity ?? 0);
-        const price = Number(h.price ?? h.ltp ?? h.avg ?? 0);
+        // If the live price is missing or 0, fall back to the average cost
+        const price = Number(h.price || h.ltp || h.avg || 0);
         const company = BY_NSE[name];
 
-        if (!company || !qty || !price) {
-          skippedNames.push(name || "unknown");
+        if (!company) {
+          skippedNames.push(`${name || "unknown"} (not in stock list)`);
+          return;
+        }
+        if (!qty || !price) {
+          skippedNames.push(`${name} (no quantity or price)`);
           return;
         }
         payload.push({
@@ -65,7 +74,9 @@ const RiskPanel = () => {
       setSkipped(skippedNames);
 
       if (payload.length === 0) {
-        throw new Error("No holdings with a known sector to analyze.");
+        throw new Error(
+          `None of your holdings could be analyzed. Skipped: ${skippedNames.join(", ")}`
+        );
       }
 
       // 3. Ask the backend (which asks Python) to analyze them
@@ -162,7 +173,7 @@ const RiskPanel = () => {
 
           {skipped.length > 0 && (
             <p style={{ color: "#888", fontSize: "13px", marginTop: "12px" }}>
-              Skipped (no sector or price history): {skipped.join(", ")}
+              Skipped: {skipped.join(", ")}
             </p>
           )}
         </div>
