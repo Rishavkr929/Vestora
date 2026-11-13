@@ -245,7 +245,6 @@ const Menu = () => {
     { label: "All Stocks", path: "/dashboard/stocks" },
     { label: "Journal", path: "/dashboard/journal" },
     { label: "Insights", path: "/dashboard/insights" },
-    { label: "Glossary", path: "/dashboard/quiz" },
   ];
 
   const isActive = (path) => {
