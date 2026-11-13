@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { COMPANIES } from "./companies";
 
 const API_URL = "http://localhost:3002";
 
@@ -9,24 +10,34 @@ const STYLES = {
   neutral: { label: "Neutral", color: "#555", bg: "#eeeeee" },
 };
 
-/**
- * Usage:
- *   <SentimentBadge ticker="Infosys" />
- *
- * Tip: NewsAPI searches news text, so a company name ("Infosys") works
- * better than a Yahoo symbol ("INFY.NS"). Any ".NS" suffix is removed.
- */
-const SentimentBadge = ({ ticker = "Infosys" }) => {
+const SentimentBadge = () => {
+  const [selected, setSelected] = useState("Infosys");
+  const [custom, setCustom] = useState("");
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showDetails, setShowDetails] = useState(false);
 
-  const query = ticker.replace(".NS", "").replace(".BO", "");
+  // NewsAPI searches news text, so we send the company name, not a ticker
+  const query = selected === "OTHER" ? custom.trim() : selected;
+
+  const handleSelect = (e) => {
+    setSelected(e.target.value);
+    setData(null);
+    setError("");
+    setShowDetails(false);
+  };
 
   const getSentiment = async () => {
+    if (!query) {
+      setError("Type a company name first.");
+      return;
+    }
+
     setLoading(true);
     setError("");
+    setData(null);
+    setShowDetails(false);
 
     try {
       const res = await fetch(
@@ -46,11 +57,47 @@ const SentimentBadge = ({ ticker = "Infosys" }) => {
   const style = data ? STYLES[data.overall_sentiment] || STYLES.neutral : null;
 
   return (
-    <div style={{ padding: "8px 0" }}>
-      {!data && (
-        <button onClick={getSentiment} disabled={loading}>
-          {loading ? "Reading news..." : `News sentiment for ${query}`}
+    <div style={{ padding: "16px", maxWidth: "640px" }}>
+      <h3 style={{ marginBottom: "12px" }}>News sentiment</h3>
+
+      <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
+        <select
+          value={selected}
+          onChange={handleSelect}
+          style={{ padding: "6px 10px", flex: 1 }}
+        >
+          {COMPANIES.map((c) => (
+            <option key={c.symbol} value={c.news}>
+              {c.name}
+            </option>
+          ))}
+          <option value="OTHER">Other (type a company name)</option>
+        </select>
+
+        <button
+          onClick={getSentiment}
+          disabled={loading}
+          style={{ padding: "6px 14px" }}
+        >
+          {loading ? "Reading news..." : "Check sentiment"}
         </button>
+      </div>
+
+      {selected === "OTHER" && (
+        <input
+          value={custom}
+          onChange={(e) => setCustom(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && getSentiment()}
+          placeholder="Company name, e.g. Nestle India"
+          style={{ padding: "6px 10px", width: "100%", marginBottom: "12px" }}
+        />
+      )}
+
+      {loading && (
+        <p style={{ color: "#666" }}>
+          The first run downloads the language model, so it can take a few
+          minutes.
+        </p>
       )}
 
       {error && <p style={{ color: "#df514c" }}>{error}</p>}

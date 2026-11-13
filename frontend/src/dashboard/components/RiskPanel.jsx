@@ -1,4 +1,5 @@
 import { useState } from "react";
+import api from "../../utils/api";
 
 const API_URL = "http://localhost:3002";
 
@@ -39,23 +40,39 @@ const RiskPanel = () => {
     setResult(null);
 
     try {
-      // 1. Get the user's holdings from your existing route
-      const holdingsRes = await fetch(`${API_URL}/allHoldings`);
-      const holdings = await holdingsRes.json();
+      // 1. Get the user's holdings (api sends the login token for us)
+      const holdingsRes = await api.get("/allHoldings");
+      let holdings = holdingsRes.data;
+
+      // Accept either a plain array or an object that wraps the array
+      if (!Array.isArray(holdings)) {
+        holdings = holdings?.holdings || holdings?.data || null;
+      }
+      if (!Array.isArray(holdings)) {
+        throw new Error("Holdings came back in an unexpected format.");
+      }
+      if (holdings.length === 0) {
+        throw new Error("You have no holdings yet, so there is nothing to analyze.");
+      }
 
       // 2. Convert them into the shape the ML service expects
       const payload = [];
       const skippedNames = [];
 
       holdings.forEach((h) => {
-        const sector = SECTOR_MAP[h.name];
-        if (!sector) {
-          skippedNames.push(h.name);
+        const rawName = h.name || h.symbol || h.stock || "";
+        const name = String(rawName).replace(".NS", "").replace(".BO", "");
+        const qty = Number(h.qty ?? h.quantity ?? 0);
+        const price = Number(h.price ?? h.ltp ?? h.avg ?? 0);
+        const sector = SECTOR_MAP[name];
+
+        if (!sector || !qty || !price) {
+          skippedNames.push(name || "unknown");
           return;
         }
         payload.push({
-          ticker: `${h.name}.NS`,
-          value: h.qty * h.price,
+          ticker: `${name}.NS`,
+          value: qty * price,
           sector,
         });
       });
@@ -77,7 +94,7 @@ const RiskPanel = () => {
       if (!res.ok) throw new Error(data.error || "Could not analyze portfolio");
       setResult(data);
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.message || err.response?.data?.error || err.message);
     } finally {
       setLoading(false);
     }

@@ -1,15 +1,32 @@
 import { useState } from "react";
+import { COMPANIES } from "./companies";
 
 const API_URL = "http://localhost:3002";
 
 const Forecast = () => {
-  const [ticker, setTicker] = useState("INFY.NS");
+  const [selected, setSelected] = useState("INFY.NS");
+  const [custom, setCustom] = useState("");
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // The ticker sent to the server: from the dropdown, or typed if "Other"
+  const ticker =
+    selected === "OTHER" ? custom.trim().toUpperCase() : selected;
+  const company = COMPANIES.find((c) => c.symbol === selected);
+  const currency = /\.(NS|BO)$/.test(ticker) ? "₹" : "$";
+
+  const handleSelect = (e) => {
+    setSelected(e.target.value);
+    setData(null);
+    setError("");
+  };
+
   const getForecast = async () => {
-    if (!ticker.trim()) return;
+    if (!ticker) {
+      setError("Type a ticker first, for example TCS.NS");
+      return;
+    }
 
     setLoading(true);
     setError("");
@@ -17,7 +34,7 @@ const Forecast = () => {
 
     try {
       const res = await fetch(
-        `${API_URL}/api/ml/forecast/${encodeURIComponent(ticker.trim())}`
+        `${API_URL}/api/ml/forecast/${encodeURIComponent(ticker)}`
       );
       const result = await res.json();
 
@@ -35,13 +52,19 @@ const Forecast = () => {
       <h3 style={{ marginBottom: "12px" }}>Price forecast</h3>
 
       <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
-        <input
-          value={ticker}
-          onChange={(e) => setTicker(e.target.value.toUpperCase())}
-          onKeyDown={(e) => e.key === "Enter" && getForecast()}
-          placeholder="e.g. TCS.NS"
+        <select
+          value={selected}
+          onChange={handleSelect}
           style={{ padding: "6px 10px", flex: 1 }}
-        />
+        >
+          {COMPANIES.map((c) => (
+            <option key={c.symbol} value={c.symbol}>
+              {c.name} ({c.symbol})
+            </option>
+          ))}
+          <option value="OTHER">Other (type a ticker)</option>
+        </select>
+
         <button
           onClick={getForecast}
           disabled={loading}
@@ -50,6 +73,16 @@ const Forecast = () => {
           {loading ? "Predicting..." : "Get forecast"}
         </button>
       </div>
+
+      {selected === "OTHER" && (
+        <input
+          value={custom}
+          onChange={(e) => setCustom(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && getForecast()}
+          placeholder="Yahoo Finance ticker, e.g. NESTLEIND.NS"
+          style={{ padding: "6px 10px", width: "100%", marginBottom: "12px" }}
+        />
+      )}
 
       {loading && (
         <p style={{ color: "#666" }}>
@@ -62,7 +95,11 @@ const Forecast = () => {
       {data && (
         <div>
           <p>
-            Last price: <strong>₹{data.last_actual_price.toFixed(2)}</strong>
+            {company ? company.name : ticker} last price:{" "}
+            <strong>
+              {currency}
+              {data.last_actual_price.toFixed(2)}
+            </strong>
             <span style={{ color: "#666", marginLeft: "12px" }}>
               Model: ARIMA({data.order_used.join(", ")})
             </span>
@@ -71,7 +108,7 @@ const Forecast = () => {
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr style={{ textAlign: "left", borderBottom: "1px solid #ddd" }}>
-                <th style={{ padding: "6px 0" }}>Day</th>
+                <th style={{ padding: "6px 0" }}>Trading day</th>
                 <th>Predicted</th>
                 <th>Low</th>
                 <th>High</th>

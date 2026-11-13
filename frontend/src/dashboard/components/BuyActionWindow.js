@@ -108,6 +108,7 @@ const BuyActionWindow = ({ stock, mode }) => {
         </span>
         <div>
           <Link
+            to=""
             className={`buy-btn ${isBuy ? "btn-blue" : "btn-grey"}`}
             onClick={submitting ? undefined : handleConfirmClick}
           >

@@ -9,12 +9,7 @@ const Insights = () => {
       <h3 className="title">Insights</h3>
 
       <Forecast />
-
-      <div style={{ padding: "0 16px" }}>
-        <h3 style={{ marginBottom: "4px" }}>News sentiment</h3>
-        <SentimentBadge ticker="Infosys" />
-      </div>
-
+      <SentimentBadge />
       <RiskPanel />
     </div>
   );

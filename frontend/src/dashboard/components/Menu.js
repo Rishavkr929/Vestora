@@ -57,7 +57,7 @@ const Menu = () => {
       .get("/api/auth/me")
       .then((res) => setWalletBalance(res.data.walletBalance))
       .catch(() => {});
-  }, []);
+  }, []);  // eslint-disable-next-line react-hooks/exhaustive-deps
 
   const handleMenuClick = (index) => {
     setSelectedMenu(index);
@@ -72,7 +72,7 @@ const Menu = () => {
 
   return (
     <div className="menu-container">
-      <img src="media/image/logo2.png" style={{ width: "50px" }} />
+      <img src="/media/image/logo2.png" alt="Vestora" style={{ width: "50px" }} />
       {/* 1. Navigation Links Section */}
       <div className="menus">
         <ul>
