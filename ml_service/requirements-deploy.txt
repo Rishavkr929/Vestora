@@ -8,6 +8,5 @@ gunicorn
 yfinance
 pandas
 numpy
-statsmodels
 scikit-learn
 requests
