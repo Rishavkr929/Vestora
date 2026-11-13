@@ -1,7 +1,6 @@
 import { useState } from "react";
+import api from "../../utils/api";
 import { COMPANIES } from "./companies";
-
-const API_URL = "http://localhost:3002";
 
 const Forecast = () => {
   const [selected, setSelected] = useState("INFY.NS");
@@ -33,15 +32,14 @@ const Forecast = () => {
     setData(null);
 
     try {
-      const res = await fetch(
-        `${API_URL}/api/ml/forecast/${encodeURIComponent(ticker)}`
+      // 2 minute timeout: the first forecast for a stock can be slow
+      const res = await api.get(
+        `/api/ml/forecast/${encodeURIComponent(ticker)}`,
+        { timeout: 120000 }
       );
-      const result = await res.json();
-
-      if (!res.ok) throw new Error(result.error || "Could not get forecast");
-      setData(result);
+      setData(res.data);
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.error || err.message);
     } finally {
       setLoading(false);
     }

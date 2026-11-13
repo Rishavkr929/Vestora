@@ -1,7 +1,6 @@
 import { useState } from "react";
+import api from "../../utils/api";
 import { COMPANIES } from "./companies";
-
-const API_URL = "http://localhost:3002";
 
 // Backend returns positive / negative / neutral. Show them as market terms.
 const STYLES = {
@@ -40,15 +39,14 @@ const SentimentBadge = () => {
     setShowDetails(false);
 
     try {
-      const res = await fetch(
-        `${API_URL}/api/ml/sentiment/${encodeURIComponent(query)}`
+      // Long timeout: the first run downloads the language model
+      const res = await api.get(
+        `/api/ml/sentiment/${encodeURIComponent(query)}`,
+        { timeout: 300000 }
       );
-      const result = await res.json();
-
-      if (!res.ok) throw new Error(result.error || "Could not get sentiment");
-      setData(result);
+      setData(res.data);
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.error || err.message);
     } finally {
       setLoading(false);
     }

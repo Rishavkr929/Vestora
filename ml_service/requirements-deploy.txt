@@ -1,0 +1,14 @@
+# Lean requirements for hosting the ML service on a free plan.
+# Leaves out torch and transformers (several GB), so the forecast,
+# portfolio risk, recommendations and anomaly features work, and
+# the news sentiment feature reports that it is not installed.
+flask
+flask-cors
+gunicorn
+yfinance
+pandas
+numpy
+statsmodels
+pmdarima
+scikit-learn
+requests
