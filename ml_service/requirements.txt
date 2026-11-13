@@ -1,0 +1,12 @@
+flask
+flask-cors
+yfinance
+pandas
+numpy
+statsmodels
+pmdarima
+scikit-learn
+transformers
+torch
+requests
+matplotlib

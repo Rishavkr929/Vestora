@@ -12,6 +12,7 @@ import WatchList from "./WatchList";
 import AllStocks from "./AllStocks";
 import Journal from "./Journal";
 import Quiz from "./Quiz";
+import Insights from "./Insights";
 import { GeneralContextProvider } from "./GeneralContext";
 
 const Dashboard = () => {
@@ -30,6 +31,7 @@ const Dashboard = () => {
             <Route path="/stocks" element={<AllStocks />} />
             <Route path="/journal" element={<Journal />} />
             <Route path="/quiz" element={<Quiz />} />
+            <Route path="/insights" element={<Insights />} />
           </Routes>
         </div>
       </div>
