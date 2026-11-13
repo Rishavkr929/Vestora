@@ -1,25 +1,10 @@
 import { useState } from "react";
 import api from "../../utils/api";
+import { COMPANIES } from "./companies";
 
-const API_URL = "http://localhost:3002";
-
-// Your holdings only store a name, so the sector is looked up here.
-// Add a line for any new stock you put in your holdings.
-// Anything missing from this list (e.g. SGBMAY29, a gold bond) is skipped.
-const SECTOR_MAP = {
-  BHARTIARTL: "Telecom",
-  HDFCBANK: "Financials",
-  SBIN: "Financials",
-  HINDUNILVR: "FMCG",
-  ITC: "FMCG",
-  INFY: "IT",
-  TCS: "IT",
-  WIPRO: "IT",
-  KPITTECH: "IT",
-  "M&M": "Auto",
-  RELIANCE: "Energy",
-  TATAPOWER: "Utilities",
-};
+// Look up each holding's sector and Yahoo ticker from the shared company list.
+// Holdings for a stock that is not in companies.js are skipped.
+const BY_NSE = Object.fromEntries(COMPANIES.map((c) => [c.nse, c]));
 
 const sharpeLabel = (s) => {
   if (s < 0) return "Below risk-free returns";
@@ -64,16 +49,16 @@ const RiskPanel = () => {
         const name = String(rawName).replace(".NS", "").replace(".BO", "");
         const qty = Number(h.qty ?? h.quantity ?? 0);
         const price = Number(h.price ?? h.ltp ?? h.avg ?? 0);
-        const sector = SECTOR_MAP[name];
+        const company = BY_NSE[name];
 
-        if (!sector || !qty || !price) {
+        if (!company || !qty || !price) {
           skippedNames.push(name || "unknown");
           return;
         }
         payload.push({
-          ticker: `${name}.NS`,
+          ticker: company.symbol,
           value: qty * price,
-          sector,
+          sector: company.sector,
         });
       });
 
@@ -84,15 +69,12 @@ const RiskPanel = () => {
       }
 
       // 3. Ask the backend (which asks Python) to analyze them
-      const res = await fetch(`${API_URL}/api/ml/portfolio-risk`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ holdings: payload }),
-      });
-      const data = await res.json();
-
-      if (!res.ok) throw new Error(data.error || "Could not analyze portfolio");
-      setResult(data);
+      const res = await api.post(
+        "/api/ml/portfolio-risk",
+        { holdings: payload },
+        { timeout: 120000 }
+      );
+      setResult(res.data);
     } catch (err) {
       setError(err.response?.data?.message || err.response?.data?.error || err.message);
     } finally {

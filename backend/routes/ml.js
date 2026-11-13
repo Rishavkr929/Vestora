@@ -2,7 +2,8 @@ const express = require("express");
 const axios = require("axios");
 const router = express.Router();
 
-const ML_URL = "http://localhost:5001";
+// Set ML_URL in the hosting dashboard when the Python service is deployed
+const ML_URL = process.env.ML_URL || "http://localhost:5001";
 
 // Show Python's real error message instead of a generic "status code 500"
 const errorMessage = (err) =>
