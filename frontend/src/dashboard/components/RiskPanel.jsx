@@ -1,361 +1,129 @@
-// import { useState } from "react";
-// import api from "../../utils/api";
-// import { COMPANIES } from "./companies";
-
-// // Look up each holding's sector and Yahoo ticker from the shared company list.
-// // Holdings for a stock that is not in companies.js are skipped.
-// const BY_NSE = Object.fromEntries(COMPANIES.map((c) => [c.nse, c]));
-
-// const sharpeLabel = (s) => {
-//   if (s < 0) return "Below risk-free returns";
-//   if (s < 1) return "Low return for the risk taken";
-//   if (s < 2) return "Good";
-//   return "Very good";
-// };
-
-// const RiskPanel = () => {
-//   const [result, setResult] = useState(null);
-//   const [skipped, setSkipped] = useState([]);
-//   const [loading, setLoading] = useState(false);
-//   const [error, setError] = useState("");
-
-//   const analyze = async () => {
-//     setLoading(true);
-//     setError("");
-//     setResult(null);
-
-//     try {
-//       // 1. Get the user's holdings (api sends the login token for us)
-//       const holdingsRes = await api.get("/allHoldings");
-//       let holdings = holdingsRes.data;
-
-//       // Accept either a plain array or an object that wraps the array
-//       if (!Array.isArray(holdings)) {
-//         holdings = holdings?.holdings || holdings?.data || null;
-//       }
-//       if (!Array.isArray(holdings)) {
-//         throw new Error("Holdings came back in an unexpected format.");
-//       }
-//       if (holdings.length === 0) {
-//         throw new Error("You have no holdings yet, so there is nothing to analyze.");
-//       }
-
-//       // 2. Convert them into the shape the ML service expects
-//       const payload = [];
-//       const skippedNames = [];
-
-//       holdings.forEach((h) => {
-//         const rawName = h.name || h.symbol || h.stock || "";
-//         const name = String(rawName).replace(".NS", "").replace(".BO", "");
-//         const qty = Number(h.qty ?? h.quantity ?? 0);
-//         const price = Number(h.price ?? h.ltp ?? h.avg ?? 0);
-//         const company = BY_NSE[name];
-
-//         if (!company || !qty || !price) {
-//           skippedNames.push(name || "unknown");
-//           return;
-//         }
-//         payload.push({
-//           ticker: company.symbol,
-//           value: qty * price,
-//           sector: company.sector,
-//         });
-//       });
-
-//       setSkipped(skippedNames);
-
-//       if (payload.length === 0) {
-//         throw new Error("No holdings with a known sector to analyze.");
-//       }
-
-//       // 3. Ask the backend (which asks Python) to analyze them
-//       const res = await api.post(
-//         "/api/ml/portfolio-risk",
-//         { holdings: payload },
-//         { timeout: 120000 }
-//       );
-//       setResult(res.data);
-//     } catch (err) {
-//       setError(err.response?.data?.message || err.response?.data?.error || err.message);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   const sectors = result
-//     ? Object.entries(result.sector_concentration_pct).sort((a, b) => b[1] - a[1])
-//     : [];
-
-//   return (
-//     <div style={{ padding: "16px", maxWidth: "640px" }}>
-//       <h3 style={{ marginBottom: "12px" }}>Portfolio risk</h3>
-
-//       <button onClick={analyze} disabled={loading} style={{ padding: "6px 14px" }}>
-//         {loading ? "Analyzing..." : "Analyze my holdings"}
-//       </button>
-
-//       {loading && (
-//         <p style={{ color: "#666" }}>
-//           Fetching price history for each stock. This can take about 10 seconds.
-//         </p>
-//       )}
-
-//       {error && <p style={{ color: "#df514c" }}>{error}</p>}
-
-//       {result && (
-//         <div style={{ marginTop: "16px" }}>
-//           {result.diversification_warning && (
-//             <p
-//               style={{
-//                 background: "#fff4e5",
-//                 border: "1px solid #f5c26b",
-//                 padding: "10px",
-//                 borderRadius: "4px",
-//               }}
-//             >
-//               More than half of your portfolio is in one sector. A fall in that
-//               sector would affect most of your money.
-//             </p>
-//           )}
-
-//           <h4>Where your money is</h4>
-//           {sectors.map(([sector, pct]) => (
-//             <div key={sector} style={{ marginBottom: "8px" }}>
-//               <div style={{ display: "flex", justifyContent: "space-between" }}>
-//                 <span>{sector}</span>
-//                 <span>{pct}%</span>
-//               </div>
-//               <div style={{ background: "#eee", height: "8px", borderRadius: "4px" }}>
-//                 <div
-//                   style={{
-//                     width: `${pct}%`,
-//                     height: "100%",
-//                     background: "#387ed1",
-//                     borderRadius: "4px",
-//                   }}
-//                 />
-//               </div>
-//             </div>
-//           ))}
-
-//           <h4 style={{ marginTop: "20px" }}>Sharpe ratio</h4>
-//           <p>
-//             <strong>{result.portfolio_sharpe_ratio}</strong>
-//             <span style={{ color: "#666", marginLeft: "10px" }}>
-//               {sharpeLabel(result.portfolio_sharpe_ratio)}
-//             </span>
-//           </p>
-
-//           <h4 style={{ marginTop: "20px" }}>Volatility by stock (yearly)</h4>
-//           <table style={{ width: "100%", borderCollapse: "collapse" }}>
-//             <tbody>
-//               {Object.entries(result.per_stock_volatility)
-//                 .sort((a, b) => b[1] - a[1])
-//                 .map(([ticker, vol]) => (
-//                   <tr key={ticker} style={{ borderBottom: "1px solid #eee" }}>
-//                     <td style={{ padding: "6px 0" }}>{ticker.replace(".NS", "")}</td>
-//                     <td style={{ textAlign: "right" }}>{(vol * 100).toFixed(1)}%</td>
-//                   </tr>
-//                 ))}
-//             </tbody>
-//           </table>
-
-//           {skipped.length > 0 && (
-//             <p style={{ color: "#888", fontSize: "13px", marginTop: "12px" }}>
-//               Skipped (no sector or price history): {skipped.join(", ")}
-//             </p>
-//           )}
-//         </div>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default RiskPanel;
-
 import { useState } from "react";
-import api, { cachedGet } from "../../utils/api";
+import api from "../../utils/api";
 import { COMPANIES } from "./companies";
+import { mlRequest, mlErrorText } from "./mlRequest";
+import { C, h2, lead, pill, card, label, big, grid } from "./insightsTheme";
 
-// Look up each holding's sector and Yahoo ticker from the shared company list.
-// Holdings for a stock that is not in companies.js are skipped.
+// Sector and Yahoo ticker for each holding come from the shared company list
 const BY_NSE = Object.fromEntries(COMPANIES.map((c) => [c.nse, c]));
 
-const sharpeLabel = (s) => {
-  if (s < 0) return "Below risk-free returns";
-  if (s < 1) return "Low return for the risk taken";
-  if (s < 2) return "Good";
-  return "Very good";
-};
+const sharpeLabel = (s) =>
+  s < 0 ? "Below risk-free returns" : s < 1 ? "Low return for the risk taken" : s < 2 ? "Good" : "Very good";
 
 const RiskPanel = () => {
   const [result, setResult] = useState(null);
   const [skipped, setSkipped] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [status, setStatus] = useState("");
 
   const analyze = async () => {
-    setLoading(true);
-    setError("");
-    setResult(null);
-
+    setLoading(true); setError(""); setResult(null);
     try {
-      // 1. Get the user's holdings (api sends the login token for us)
-      const holdingsRes = await cachedGet("/allHoldings");
+      const holdingsRes = await api.get("/allHoldings");
       let holdings = holdingsRes.data;
+      if (!Array.isArray(holdings)) holdings = holdings?.holdings || holdings?.data || null;
+      if (!Array.isArray(holdings)) throw new Error("Holdings came back in an unexpected format.");
+      if (holdings.length === 0) throw new Error("You have no holdings yet, so there is nothing to analyze.");
 
-      // Accept either a plain array or an object that wraps the array
-      if (!Array.isArray(holdings)) {
-        holdings = holdings?.holdings || holdings?.data || null;
-      }
-      if (!Array.isArray(holdings)) {
-        throw new Error("Holdings came back in an unexpected format.");
-      }
-      if (holdings.length === 0) {
-        throw new Error("You have no holdings yet, so there is nothing to analyze.");
-      }
-
-      // 2. Convert them into the shape the ML service expects
       const payload = [];
       const skippedNames = [];
-
       holdings.forEach((h) => {
-        const rawName = h.name || h.symbol || h.stock || "";
-        const name = String(rawName)
-          .trim()
-          .toUpperCase()
-          .replace(".NS", "")
-          .replace(".BO", "");
+        const name = String(h.name || h.symbol || h.stock || "").trim().toUpperCase().replace(".NS", "").replace(".BO", "");
         const qty = Number(h.qty ?? h.quantity ?? 0);
-        // If the live price is missing or 0, fall back to the average cost
-        const price = Number(h.price || h.ltp || h.avg || 0);
+        const price = Number(h.price || h.ltp || h.avg || 0); // falls back to average cost
         const company = BY_NSE[name];
-
-        if (!company) {
-          skippedNames.push(`${name || "unknown"} (not in stock list)`);
-          return;
-        }
-        if (!qty || !price) {
-          skippedNames.push(`${name} (no quantity or price)`);
-          return;
-        }
-        payload.push({
-          ticker: company.symbol,
-          value: qty * price,
-          sector: company.sector,
-        });
+        if (!company) return skippedNames.push(`${name || "unknown"} (not in stock list)`);
+        if (!qty || !price) return skippedNames.push(`${name} (no quantity or price)`);
+        payload.push({ ticker: company.symbol, value: qty * price, sector: company.sector });
       });
-
       setSkipped(skippedNames);
-
       if (payload.length === 0) {
-        throw new Error(
-          `None of your holdings could be analyzed. Skipped: ${skippedNames.join(", ")}`
-        );
+        throw new Error(`None of your holdings could be analyzed. Skipped: ${skippedNames.join(", ")}`);
       }
 
-      // 3. Ask the backend (which asks Python) to analyze them
-      const res = await api.post(
-        "/api/ml/portfolio-risk",
-        { holdings: payload },
-        { timeout: 120000 }
+      const res = await mlRequest(
+        { method: "post", url: "/api/ml/portfolio-risk", data: { holdings: payload }, timeout: 120000 },
+        setStatus
       );
       setResult(res.data);
     } catch (err) {
-      setError(err.response?.data?.message || err.response?.data?.error || err.message);
+      setError(mlErrorText(err));
     } finally {
-      setLoading(false);
+      setLoading(false); setStatus("");
     }
   };
 
-  const sectors = result
-    ? Object.entries(result.sector_concentration_pct).sort((a, b) => b[1] - a[1])
-    : [];
+  const sectors = result ? Object.entries(result.sector_concentration_pct).sort((a, b) => b[1] - a[1]) : [];
+  const th = { ...label, margin: 0, padding: "10px 8px" };
 
   return (
-    <div style={{ padding: "16px", maxWidth: "640px" }}>
-      <h3 style={{ marginBottom: "12px" }}>Portfolio risk</h3>
+    <section style={{ marginBottom: 56 }}>
+      <h2 style={h2}>Portfolio risk</h2>
+      <p style={lead}>See how your money is spread across sectors, and how much each stock moves.</p>
 
-      <button onClick={analyze} disabled={loading} style={{ padding: "6px 14px" }}>
+      <button style={pill(loading)} disabled={loading} onClick={analyze}>
         {loading ? "Analyzing..." : "Analyze my holdings"}
       </button>
-
-      {loading && (
-        <p style={{ color: "#666" }}>
-          Fetching price history for each stock. This can take about 10 seconds.
-        </p>
-      )}
-
-      {error && <p style={{ color: "#df514c" }}>{error}</p>}
+      {loading && <p style={{ color: C.muted }}>{status || "Fetching price history for each stock. This can take about 10 seconds."}</p>}
+      {error && <p style={{ color: C.maroon }}>{error}</p>}
 
       {result && (
-        <div style={{ marginTop: "16px" }}>
+        <div style={{ marginTop: 20 }}>
           {result.diversification_warning && (
-            <p
-              style={{
-                background: "#fff4e5",
-                border: "1px solid #f5c26b",
-                padding: "10px",
-                borderRadius: "4px",
-              }}
-            >
-              More than half of your portfolio is in one sector. A fall in that
-              sector would affect most of your money.
-            </p>
+            <div style={{ border: `1px solid ${C.maroon}`, color: C.maroon, borderRadius: 16, padding: "12px 16px", marginBottom: 24, fontSize: 14 }}>
+              More than half of your portfolio is in one sector. A fall in that sector would affect most of your money.
+            </div>
           )}
 
-          <h4>Where your money is</h4>
+          <h3 style={{ ...h2, fontSize: 20 }}>Where your money is</h3>
           {sectors.map(([sector, pct]) => (
-            <div key={sector} style={{ marginBottom: "8px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span>{sector}</span>
-                <span>{pct}%</span>
+            <div key={sector} style={{ marginBottom: 12 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14, marginBottom: 4 }}>
+                <span>{sector}</span><span>{pct}%</span>
               </div>
-              <div style={{ background: "#eee", height: "8px", borderRadius: "4px" }}>
-                <div
-                  style={{
-                    width: `${pct}%`,
-                    height: "100%",
-                    background: "#387ed1",
-                    borderRadius: "4px",
-                  }}
-                />
+              <div style={{ background: C.grey, height: 8, borderRadius: 4 }}>
+                <div style={{ width: `${pct}%`, height: "100%", background: C.green, borderRadius: 4 }} />
               </div>
             </div>
           ))}
 
-          <h4 style={{ marginTop: "20px" }}>Sharpe ratio</h4>
-          <p>
-            <strong>{result.portfolio_sharpe_ratio}</strong>
-            <span style={{ color: "#666", marginLeft: "10px" }}>
-              {sharpeLabel(result.portfolio_sharpe_ratio)}
-            </span>
-          </p>
+          <div style={{ ...grid, margin: "24px 0" }}>
+            <div style={card()}>
+              <p style={label}>Sharpe ratio</p>
+              <p style={big}>{result.portfolio_sharpe_ratio}</p>
+              <p style={{ margin: "6px 0 0", fontSize: 13 }}>{sharpeLabel(result.portfolio_sharpe_ratio)}</p>
+            </div>
+            <div style={card(C.maroon, "#fff")}>
+              <p style={label}>What it means</p>
+              <p style={{ margin: 0, fontSize: 14 }}>
+                It compares your returns with a safe investment, after allowing for how much your prices swing. Higher is better.
+              </p>
+            </div>
+          </div>
 
-          <h4 style={{ marginTop: "20px" }}>Volatility by stock (yearly)</h4>
+          <h3 style={{ ...h2, fontSize: 20 }}>Volatility by stock (yearly)</h3>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
+              <tr style={{ borderBottom: `1px solid ${C.green}` }}>
+                <th style={{ ...th, textAlign: "left" }}>Stock</th>
+                <th style={{ ...th, textAlign: "right" }}>Volatility</th>
+              </tr>
+            </thead>
             <tbody>
-              {Object.entries(result.per_stock_volatility)
-                .sort((a, b) => b[1] - a[1])
-                .map(([ticker, vol]) => (
-                  <tr key={ticker} style={{ borderBottom: "1px solid #eee" }}>
-                    <td style={{ padding: "6px 0" }}>{ticker.replace(".NS", "")}</td>
-                    <td style={{ textAlign: "right" }}>{(vol * 100).toFixed(1)}%</td>
-                  </tr>
-                ))}
+              {Object.entries(result.per_stock_volatility).sort((a, b) => b[1] - a[1]).map(([t, v]) => (
+                <tr key={t} style={{ borderBottom: "1px solid #d9d9d4" }}>
+                  <td style={{ padding: "10px 8px" }}>{t.replace(".NS", "")}</td>
+                  <td style={{ textAlign: "right", padding: "10px 8px" }}>{(v * 100).toFixed(1)}%</td>
+                </tr>
+              ))}
             </tbody>
           </table>
-
-          {skipped.length > 0 && (
-            <p style={{ color: "#888", fontSize: "13px", marginTop: "12px" }}>
-              Skipped: {skipped.join(", ")}
-            </p>
-          )}
+          {skipped.length > 0 && <p style={{ fontSize: 12, color: C.muted, marginTop: 10 }}>Skipped: {skipped.join(", ")}</p>}
         </div>
       )}
-    </div>
+    </section>
   );
 };
 
 export default RiskPanel;
-

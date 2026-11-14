@@ -25,16 +25,17 @@ CACHE_SECONDS = 60 * 60
 _CACHE = {}
 
 
-def fetch_stock_data(ticker: str, period: str = "1y") -> np.ndarray:
-    """Download daily closing prices as a plain array (oldest first)."""
+def fetch_stock_data(ticker: str, period: str = "1y"):
+    """Download daily closes. Returns (dates as text, prices as an array), oldest first."""
     data = yf.download(ticker, period=period, progress=False)
     if data.empty:
         raise ValueError(f"No data found for ticker '{ticker}'")
     series = data["Close"].squeeze().dropna().astype(float)
     prices = series.to_numpy()
+    dates = [d.strftime("%Y-%m-%d") for d in series.index]
     if len(prices) < 60:
         raise ValueError(f"Not enough price history for '{ticker}'")
-    return prices
+    return dates, prices
 
 
 def _lag_matrix(diffs: np.ndarray, p: int, start: int) -> np.ndarray:
@@ -69,7 +70,7 @@ def forecast_stock(ticker: str, days_ahead: int = 10) -> dict:
     if cached and time.time() - cached[0] < CACHE_SECONDS:
         return cached[1]
 
-    prices = fetch_stock_data(ticker)
+    dates, prices = fetch_stock_data(ticker)
     diffs = np.diff(prices)
     model = fit_ar(diffs)
     p, phi, sigma2 = model["p"], model["phi"], model["sigma2"]
@@ -98,6 +99,11 @@ def forecast_stock(ticker: str, days_ahead: int = 10) -> dict:
         "forecast": [round(float(v), 2) for v in forecast],
         "lower_bound": [round(float(v), 2) for v in forecast - margin],
         "upper_bound": [round(float(v), 2) for v in forecast + margin],
+        # last 90 trading days, used to draw the chart
+        "history": {
+            "dates": dates[-90:],
+            "prices": [round(float(v), 2) for v in prices[-90:]],
+        },
     }
 
     _CACHE[key] = (time.time(), result)
