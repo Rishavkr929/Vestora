@@ -19,4 +19,8 @@ const PositionsSchema = new Schema(
   { timestamps: true }
 );
 
+// Speeds up every lookup by user.
+PositionsSchema.index({ userId: 1 });
+PositionsSchema.index({ status: 1 });
+
 module.exports = { PositionsSchema };

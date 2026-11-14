@@ -21,4 +21,6 @@ const HoldingsSchema = new Schema({
     },
 }) ;
 
+HoldingsSchema.index({ userId: 1, name: 1 });
+
 module.exports={HoldingsSchema};

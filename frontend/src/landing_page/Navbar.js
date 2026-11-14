@@ -129,6 +129,15 @@ function Navbar() {
             </NavLink>
 
             <NavLink
+              to="/glossary"
+              className="py-2"
+              style={navStyle}
+              onClick={closeMenu}
+            >
+              Glossary
+            </NavLink>
+
+            <NavLink
               to="/signup"
               className="btn rounded-pill py-2 mt-2 fw-semibold"
               style={{

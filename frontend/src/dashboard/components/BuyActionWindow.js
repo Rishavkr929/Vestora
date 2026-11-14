@@ -153,7 +153,12 @@ const BuyActionWindow = ({ stock, mode }) => {
 
   // Watchlist stocks may use "symbol".
   // Holdings use "name".
-  const stockName = stock?.name || stock?.symbol;
+ const stockName = stock?.symbol || stock?.name;
+
+ const stockDisplayName =
+  stock?.symbol && stock?.name
+    ? stock.name
+    : stockName;
 
   const stockPrice = Number(stock?.price) || 0;
   const availableQty = Number(stock?.qty) || 0;
@@ -222,8 +227,8 @@ const BuyActionWindow = ({ stock, mode }) => {
         <h3 style={{ margin: 0, color: "#444", fontSize: "16px" }}>
           {isBuy ? "Invest in " : "Sell "}
           <span style={{ color: "#387ed1" }}>
-            {stockName}
-          </span>
+  {stockDisplayName}
+</span>
         </h3>
 
         <p
