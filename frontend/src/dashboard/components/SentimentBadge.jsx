@@ -1,6 +1,6 @@
 import { useState } from "react";
-import api from "../../utils/api";
 import { COMPANIES } from "./companies";
+import { mlRequest, mlErrorText } from "./mlRequest";
 
 // Backend returns positive / negative / neutral. Show them as market terms.
 const STYLES = {
@@ -15,6 +15,7 @@ const SentimentBadge = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [status, setStatus] = useState("");
   const [showDetails, setShowDetails] = useState(false);
 
   // NewsAPI searches news text, so we send the company name, not a ticker
@@ -40,15 +41,20 @@ const SentimentBadge = () => {
 
     try {
       // Long timeout: the first run downloads the language model
-      const res = await api.get(
-        `/api/ml/sentiment/${encodeURIComponent(query)}`,
-        { timeout: 300000 }
+      const res = await mlRequest(
+        {
+          method: "get",
+          url: `/api/ml/sentiment/${encodeURIComponent(query)}`,
+          timeout: 300000,
+        },
+        setStatus
       );
       setData(res.data);
     } catch (err) {
-      setError(err.response?.data?.error || err.message);
+      setError(mlErrorText(err));
     } finally {
       setLoading(false);
+      setStatus("");
     }
   };
 
@@ -93,8 +99,8 @@ const SentimentBadge = () => {
 
       {loading && (
         <p style={{ color: "#666" }}>
-          The first run downloads the language model, so it can take a few
-          minutes.
+          {status ||
+            "Reading recent news headlines. The first run can take a little while."}
         </p>
       )}
 
@@ -129,6 +135,12 @@ const SentimentBadge = () => {
             {showDetails ? "Hide headlines" : "Show headlines"}
           </button>
 
+          {data.method && (
+            <p style={{ color: "#888", fontSize: "13px", marginTop: "8px" }}>
+              Method: {data.method}
+            </p>
+          )}
+
           {showDetails && (
             <ul style={{ marginTop: "10px", paddingLeft: "18px" }}>
               {data.details.length === 0 && <li>No recent headlines found.</li>}
@@ -141,7 +153,10 @@ const SentimentBadge = () => {
                       fontSize: "13px",
                     }}
                   >
-                    ({item.sentiment}, {Math.round(item.confidence * 100)}%)
+                    ({item.sentiment}
+                    {item.confidence != null
+                      ? `, ${Math.round(item.confidence * 100)}%`
+                      : ""})
                   </span>
                 </li>
               ))}
