@@ -24,4 +24,7 @@ const OrdersSchema = new Schema(
   { timestamps: true }
 );
 
+// Speeds up every lookup by user.
+OrdersSchema.index({ userId: 1, createdAt: -1 });
+
 module.exports = { OrdersSchema };

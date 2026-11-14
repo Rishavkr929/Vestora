@@ -133,11 +133,9 @@
 
 // export default AllStocks;
 
-
-
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
-import api from "../../utils/api";
+import api, { cachedGet } from "../../utils/api";
 import StockChartModal from "./StockChartModal";
 import TrendModal from "./TrendModal";
 
@@ -150,57 +148,35 @@ const AllStocks = () => {
   const [chartStock, setChartStock] = useState(null);
   const [trendStock, setTrendStock] = useState(null);
 
-  const load = async () => {
-    try {
-      const [stocksRes, watchlistRes] = await Promise.all([
-        api.get("/api/stocks"),
-        api.get("/api/watchlist"),
-      ]);
-
-      setStocks(stocksRes.data);
-      setFavourites(watchlistRes.data);
-    } catch (err) {
-      toast.error("Unable to load stocks. Please try again.");
-    }
+  const load = () => {
+    cachedGet("/api/stocks", 60000).then((res) => setStocks(res.data));
+    api.get("/api/watchlist").then((res) => setFavourites(res.data));
   };
 
-  useEffect(() => {
-    load();
-  }, []);
+  useEffect(load, []);
 
   const toggleFavourite = async (symbol) => {
     try {
       if (favourites.includes(symbol)) {
         await api.delete(`/api/watchlist/${symbol}`);
       } else {
-        if (favourites.length >= MAX_WATCHLIST) {
-          toast.warning("Your watchlist can contain only 50 stocks.");
-          return;
-        }
-
         await api.post(`/api/watchlist/${symbol}`);
       }
 
       const res = await api.get("/api/watchlist");
       setFavourites(res.data);
-
     } catch (err) {
       toast.error(
-        err.response?.data?.message ||
-        "Could not update your watchlist."
+        err.response?.data?.message || "Could not update your watchlist.",
       );
     }
   };
 
-  const visible = stocks.filter((s) => {
-    const query = search.toLowerCase();
-
-    return (
-      s.symbol?.toLowerCase().includes(query) ||
-      s.name?.toLowerCase().includes(query) ||
-      s.sector?.toLowerCase().includes(query)
-    );
-  });
+  const visible = stocks.filter((s) =>
+      !search ||
+      s.symbol.toLowerCase().includes(search.toLowerCase()) ||
+      s.name.toLowerCase().includes(search.toLowerCase()) ||
+      s.sector.toLowerCase().includes(search.toLowerCase()));
 
   const formatPrice = (price) => {
     return price != null
@@ -253,10 +229,8 @@ const AllStocks = () => {
           color: "#174D38",
         }}
       >
-
         {/* Heading */}
         <div className="d-flex flex-wrap justify-content-between align-items-center mb-2">
-
           <div>
             <h2
               className="mb-2"
@@ -278,8 +252,7 @@ const AllStocks = () => {
                 fontWeight: "600",
               }}
             >
-              About fifty NSE stocks. Star up to fifty to build your
-              watchlist.
+              About fifty NSE stocks. Star up to fifty to build your watchlist.
             </p>
           </div>
 
@@ -293,7 +266,6 @@ const AllStocks = () => {
           >
             Watchlist: {favourites.length} / {MAX_WATCHLIST}
           </span>
-
         </div>
 
         {/* Search Bar */}
@@ -305,7 +277,6 @@ const AllStocks = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={{
-              
               color: "#F2F2F2",
               border: "2px solid #174D38",
               borderRadius: "40px",
@@ -334,7 +305,6 @@ const AllStocks = () => {
               borderCollapse: "collapse",
             }}
           >
-
             <thead>
               <tr>
                 <th style={{ ...tableHeading, width: "65px" }}></th>
@@ -358,15 +328,12 @@ const AllStocks = () => {
 
                 return (
                   <tr key={s.symbol}>
-
                     {/* Favourite */}
                     <td style={tableCell}>
                       <button
                         onClick={() => toggleFavourite(s.symbol)}
                         title={
-                          isFav
-                            ? "Remove from watchlist"
-                            : "Add to watchlist"
+                          isFav ? "Remove from watchlist" : "Add to watchlist"
                         }
                         style={{
                           background: "transparent",
@@ -387,9 +354,7 @@ const AllStocks = () => {
                     </td>
 
                     {/* Name */}
-                    <td style={tableCell}>
-                      {s.name}
-                    </td>
+                    <td style={tableCell}>{s.name}</td>
 
                     {/* Sector */}
                     <td
@@ -402,10 +367,7 @@ const AllStocks = () => {
                     </td>
 
                     {/* Price */}
-                    <td
-                      style={tableCell}
-                      className="text-end"
-                    >
+                    <td style={tableCell} className="text-end">
                       {formatPrice(s.price)}
                     </td>
 
@@ -435,13 +397,11 @@ const AllStocks = () => {
                       }}
                     >
                       <div className="d-flex align-items-center gap-2">
-
                         <button
                           onClick={() => setChartStock(s)}
                           style={actionButton}
                           onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor =
-                              "#174D38";
+                            e.currentTarget.style.backgroundColor = "#174D38";
                             e.currentTarget.style.color = "#F2F2F2";
                           }}
                           onMouseLeave={(e) => {
@@ -457,8 +417,7 @@ const AllStocks = () => {
                           onClick={() => setTrendStock(s)}
                           style={actionButton}
                           onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor =
-                              "#174D38";
+                            e.currentTarget.style.backgroundColor = "#174D38";
                             e.currentTarget.style.color = "#F2F2F2";
                           }}
                           onMouseLeave={(e) => {
@@ -469,15 +428,12 @@ const AllStocks = () => {
                         >
                           Trend
                         </button>
-
                       </div>
                     </td>
-
                   </tr>
                 );
               })}
             </tbody>
-
           </table>
 
           {/* No Results */}
@@ -492,7 +448,6 @@ const AllStocks = () => {
               No stocks found matching "{search}".
             </div>
           )}
-
         </div>
       </div>
 
@@ -505,10 +460,7 @@ const AllStocks = () => {
       )}
 
       {trendStock && (
-        <TrendModal
-          stock={trendStock}
-          onClose={() => setTrendStock(null)}
-        />
+        <TrendModal stock={trendStock} onClose={() => setTrendStock(null)} />
       )}
     </>
   );

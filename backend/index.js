@@ -28,7 +28,7 @@ const stockRoutes = require("./routes/stockRoutes");
 const watchlistRoutes = require("./routes/watchlistRoutes");
 const journalRoutes = require("./routes/journalRoutes");
 const quizRoutes = require("./routes/quizRoutes");
-const { getQuote, getQuotes } = require("./services/marketData");
+const { getQuote, getQuotes, warmUp } = require("./services/marketData");
 const mlRoutes = require("./routes/ml");
 
 app.use("/api/ml", mlRoutes);
@@ -38,21 +38,6 @@ app.use("/api/watchlist", watchlistRoutes);
 app.use("/api/journal", journalRoutes);
 app.use("/api/quiz", quizRoutes);
 
-mongoose.connection.on("connected", () => {
-  console.log("✅ MongoDB connected");
-});
-
-mongoose.connection.on("disconnected", () => {
-  console.error("⚠️ MongoDB disconnected");
-});
-
-mongoose.connection.on("reconnected", () => {
-  console.log("✅ MongoDB reconnected");
-});
-
-mongoose.connection.on("error", (err) => {
-  console.error("❌ MongoDB connection error:", err.message);
-});
 
 // app.get("/addHoldings", async (req, res) => {
 //   let tempHoldings = [
@@ -230,24 +215,33 @@ app.get("/", (req, res) => {
 });
 
 app.get("/allHoldings", authMiddleware, async (req, res) => {
-  let allHoldings = await HoldingsModel.find({ userId: req.user.id });
+  const holdings = await HoldingsModel.find({ userId: req.user.id }).lean();
 
-  if (allHoldings.length > 0) {
-    const quotes = await getQuotes(allHoldings.map((h) => h.name));
-    const quoteMap = Object.fromEntries(quotes.map((q) => [q.symbol, q.price]));
+  const changed = [];
+  if (holdings.length > 0) {
+    const quotes = await getQuotes(holdings.map((h) => h.name));
+    const priceOf = Object.fromEntries(quotes.map((q) => [q.symbol, q.price]));
 
-    for (const holding of allHoldings) {
-      if (
-        quoteMap[holding.name] != null &&
-        quoteMap[holding.name] !== holding.price
-      ) {
-        holding.price = quoteMap[holding.name];
-        await holding.save();
+    for (const holding of holdings) {
+      const live = priceOf[holding.name];
+      if (live != null && live !== holding.price) {
+        holding.price = live;
+        changed.push(holding);
       }
     }
   }
 
-  res.json(allHoldings);
+  // Answer first; save the new prices afterwards in ONE bulk write, so the
+  // user never waits for the database.
+  res.json(holdings);
+
+  if (changed.length > 0) {
+    HoldingsModel.bulkWrite(
+      changed.map((h) => ({
+        updateOne: { filter: { _id: h._id }, update: { $set: { price: h.price } } },
+      }))
+    ).catch((err) => console.error("Could not save holding prices:", err.message));
+  }
 });
 
 app.get("/allPositions", authMiddleware, async (req, res) => {
@@ -337,7 +331,7 @@ app.post("/newOrder", authMiddleware, async (req, res) => {
     // Price comes from Vestora's own live quote, never from the client —
     // a financial transaction should never let the caller name its own
     // price.
-    const quote = await getQuote(name.toUpperCase());
+    const quote = await getQuote(name.toUpperCase(), { maxAgeMs: 5 * 60 * 1000 });
     if (!quote || quote.price == null) {
       return res
         .status(400)
@@ -453,93 +447,84 @@ app.get("/allOrders", authMiddleware, async (req, res) => {
 // has an active stop-loss, update matching holdings, and sell automatically
 // if the trigger has been reached.
 async function checkStopLossPositions() {
-  const activePositions = await PositionsModel.find({ status: "active" });
+  const activePositions = await PositionsModel.find({ status: "active" }).lean();
   if (activePositions.length === 0) return;
 
   const names = [...new Set(activePositions.map((p) => p.name))];
   const quotes = await getQuotes(names);
-  const quoteMap = Object.fromEntries(quotes.map((q) => [q.symbol, q.price]));
-
-  for (const name of names) {
-    if (quoteMap[name] == null) continue;
-    const holdingsForStock = await HoldingsModel.find({ name });
-    for (const holding of holdingsForStock) {
-      if (holding.price !== quoteMap[name]) {
-        holding.price = quoteMap[name];
-        await holding.save();
-      }
-    }
-  }
-  
+  const priceOf = Object.fromEntries(quotes.map((q) => [q.symbol, q.price]));
 
   for (const position of activePositions) {
+    const livePrice = priceOf[position.name];
+    if (livePrice == null || livePrice > position.triggerPrice) continue;
+
+    // Claim the position first. If another run already claimed it, stop, so
+    // the same stop-loss can never sell twice.
+    const claimed = await PositionsModel.updateOne(
+      { _id: position._id, status: "active" },
+      { $set: { status: "triggered", triggeredAt: new Date() } }
+    );
+    if (claimed.modifiedCount === 0) continue;
+
     const holding = await HoldingsModel.findOne({
       userId: position.userId,
       name: position.name,
     });
-    if (!holding || holding.price > position.triggerPrice) continue;
-
     const user = await UserModel.findById(position.userId);
-    const sellQty = Math.min(position.qty, holding.qty);
+    const sellQty = holding ? Math.min(position.qty, holding.qty) : 0;
     if (!user || sellQty <= 0) continue;
 
-    user.walletBalance = +(
-      user.walletBalance +
-      sellQty * holding.price
-    ).toFixed(2);
+    user.walletBalance = +(user.walletBalance + sellQty * livePrice).toFixed(2);
     await user.save();
 
     if (holding.qty === sellQty) {
       await HoldingsModel.deleteOne({ _id: holding._id });
     } else {
       holding.qty -= sellQty;
+      holding.price = livePrice;
       await holding.save();
     }
 
     await new OrdersModel({
       name: position.name,
       qty: sellQty,
-      price: holding.price,
+      price: livePrice,
       mode: "SELL",
       userId: position.userId,
     }).save();
-
-    position.status = "triggered";
-    position.triggeredAt = new Date();
-    await position.save();
   }
 }
 
 
-let isCheckingStopLoss = false;
+// let isCheckingStopLoss = false;
 
-async function runStopLossCheck() {
-  if (isCheckingStopLoss) return;
+// async function runStopLossCheck() {
+//   if (isCheckingStopLoss) return;
 
-  if (mongoose.connection.readyState !== 1) {
-    console.log("⚠️ MongoDB unavailable. Skipping stop-loss check.");
-    return;
-  }
+//   if (mongoose.connection.readyState !== 1) {
+//     console.log("⚠️ MongoDB unavailable. Skipping stop-loss check.");
+//     return;
+//   }
 
-  isCheckingStopLoss = true;
+//   isCheckingStopLoss = true;
 
-  try {
-    await checkStopLossPositions();
-  } catch (error) {
-    console.error("❌ Stop-loss check failed:", error);
-  } finally {
-    isCheckingStopLoss = false;
-  }
-}
+//   try {
+//     await checkStopLossPositions();
+//   } catch (error) {
+//     console.error("❌ Stop-loss check failed:", error);
+//   } finally {
+//     isCheckingStopLoss = false;
+//   }
+// }
 
-function startStopLossScheduler() {
-  async function scheduleNextCheck() {
-    await runStopLossCheck();
-    setTimeout(scheduleNextCheck, 10000);
-  }
+// function startStopLossScheduler() {
+//   async function scheduleNextCheck() {
+//     await runStopLossCheck();
+//     setTimeout(scheduleNextCheck, 10000);
+//   }
 
-  scheduleNextCheck();
-}
+//   scheduleNextCheck();
+// }
 
 
 // mongoose
@@ -563,19 +548,23 @@ function startStopLossScheduler() {
 //   });
 
 mongoose
-  .connect(MONGO_URL, {
-    serverSelectionTimeoutMS: 10000,
-    maxPoolSize: 10,
-  })
+  .connect(MONGO_URL)
   .then(() => {
     console.log("DB Connected");
 
     app.listen(PORT, () => {
       console.log("Server running on " + PORT);
+      warmUp(); // fetch prices now, so the first visitor does not wait
     });
 
-    startStopLossScheduler();
+    setInterval(() => {
+      checkStopLossPositions().catch((err) =>
+        console.error("Stop-loss check failed:", err),
+      );
+    }, 30000); // was every 5 s
   })
   .catch((err) => {
-    console.error("MongoDB connection failed:", err);
+    console.error("MongoDB connection failed ❌");
+    console.error(err.message);
   });
+
